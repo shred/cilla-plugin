@@ -1,0 +1,1 @@
+$(function(){$('a.flattr').each(function(){$('<div>').load($(this).attr('data-counter')).insertAfter($(this));});});

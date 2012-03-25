@@ -22,7 +22,7 @@ package org.shredzone.cilla.plugin.flattr;
 import javax.annotation.Resource;
 
 import org.shredzone.cilla.core.event.EventType;
-import org.shredzone.cilla.core.event.annotation.EventHandler;
+import org.shredzone.cilla.core.event.annotation.EventListener;
 import org.shredzone.cilla.core.event.annotation.OnEvent;
 import org.shredzone.cilla.core.model.Page;
 import org.springframework.stereotype.Component;
@@ -33,8 +33,9 @@ import org.springframework.stereotype.Component;
  * @author Richard "Shred" Körber
  */
 @Component
-@EventHandler
-public class FlattrEventHandler {
+@EventListener
+public class FlattrEventListener {
+
     private @Resource FlattrPublicationService flattrPublicationService;
 
     /**
@@ -42,8 +43,8 @@ public class FlattrEventHandler {
      *
      * @param page {@link Page} that has been published
      */
-    @OnEvent(event = EventType.PAGE_PUBLISH)
-    public void publish(Page page) {
+    @OnEvent(EventType.PAGE_PUBLISH)
+    public void onPagePublish(Page page) {
         if (page.isDonatable() && !flattrPublicationService.isRegistered(page)) {
             flattrPublicationService.publish(page);
         }
@@ -54,8 +55,8 @@ public class FlattrEventHandler {
      *
      * @param page {@link Page} that was updated
      */
-    @OnEvent(event = EventType.PAGE_UPDATE)
-    public void update(Page page) {
+    @OnEvent(EventType.PAGE_UPDATE)
+    public void onPageUpdate(Page page) {
         if (page.isPublishedState()) {
             boolean hasFlattrId = flattrPublicationService.isRegistered(page);
             if (page.isDonatable() && !hasFlattrId) {
@@ -73,8 +74,8 @@ public class FlattrEventHandler {
      *
      * @param page {@link Page} that has been unpublished or deleted
      */
-    @OnEvent(event = { EventType.PAGE_UNPUBLISH, EventType.PAGE_DELETE })
-    public void unpublish(Page page) {
+    @OnEvent({ EventType.PAGE_UNPUBLISH, EventType.PAGE_DELETE })
+    public void onPageUnpublish(Page page) {
         if (flattrPublicationService.isRegistered(page)) {
             flattrPublicationService.remove(page);
         }

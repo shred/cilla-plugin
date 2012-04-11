@@ -265,7 +265,7 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
      * @return prepared {@link CharSequence}
      */
     private CharSequence prepare(CharSequence str, int maxlen) {
-        CharSequence result = textFormatter.stripHtml(str);
+        CharSequence result = textFormatter.stripHtml(str.toString().trim());
         if (result.length() > maxlen) {
             return result.subSequence(0, maxlen);
         } else {

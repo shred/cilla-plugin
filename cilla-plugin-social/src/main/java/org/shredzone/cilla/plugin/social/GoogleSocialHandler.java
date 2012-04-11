@@ -28,6 +28,7 @@ import org.shredzone.cilla.plugin.social.annotation.PageLink;
 import org.shredzone.cilla.plugin.social.annotation.PageTitle;
 import org.shredzone.cilla.plugin.social.annotation.SocialBookmark;
 import org.shredzone.cilla.plugin.social.annotation.SocialHandler;
+import org.shredzone.cilla.web.plugin.annotation.Priority;
 import org.shredzone.commons.view.ViewService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -44,6 +45,16 @@ public class GoogleSocialHandler {
     private @Value("${site.name}") String siteName;
 
     private @Resource ViewService viewService;
+
+    /**
+     * Google plus
+     */
+    @SocialBookmark(icon = "googleplus.png")
+    @Priority(9)
+    public String googlePlusSocialBookmark(@PageLink(encoded = true) String pageLink) {
+        // Thanks to http://notesofgenius.com/how-develop-custom-google-plus-button/
+        return "https://plusone.google.com/_/+1/confirm?url=" + pageLink;
+    }
 
     /**
      * Google bookmarks

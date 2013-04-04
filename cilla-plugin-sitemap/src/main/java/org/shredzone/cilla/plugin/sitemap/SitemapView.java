@@ -57,8 +57,7 @@ public class SitemapView {
             resp.setContentType("text/xml");
             resp.setHeader("Content-Encoding", "gzip");
 
-            GZIPOutputStream go = new GZIPOutputStream(resp.getOutputStream());
-            try {
+            try (GZIPOutputStream go = new GZIPOutputStream(resp.getOutputStream())) {
                 SitemapWriter writer = new SitemapWriter(go);
 
                 writer.writeHeader();
@@ -66,7 +65,7 @@ public class SitemapView {
                 writePages(writer);
                 writer.writeFooter();
                 writer.flush();
-            } finally {
+
                 go.finish();
             }
         } catch (IOException ex) {

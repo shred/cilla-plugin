@@ -56,7 +56,7 @@ public class SocialHandlerManager {
 
     private @Resource ApplicationContext applicationContext;
 
-    private SortedSet<SocialHandlerInvoker> invokers = new TreeSet<SocialHandlerInvoker>();
+    private SortedSet<SocialHandlerInvoker> invokers = new TreeSet<>();
 
     /**
      * Fetches all {@link SocialLink} to a {@link Page}.
@@ -66,7 +66,7 @@ public class SocialHandlerManager {
      * @return List of {@link SocialLink}, may be empty but never {@code null}
      */
     public List<SocialLink> fetchLinksToPage(Page page) {
-        List<SocialLink> links = new ArrayList<SocialLink>();
+        List<SocialLink> links = new ArrayList<>();
 
         for (SocialHandlerInvoker invoker : invokers) {
             SocialLink link = invoker.invoke(page);
@@ -85,7 +85,7 @@ public class SocialHandlerManager {
      */
     @PostConstruct
     public void setup() {
-        Set<String> blacklistSet = new HashSet<String>();
+        Set<String> blacklistSet = new HashSet<>();
         for (String bl : blacklist.split("[,;]+")) {
             bl = bl.trim();
             if (!bl.isEmpty()) {

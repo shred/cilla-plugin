@@ -49,7 +49,7 @@ public class FlattrLanguage {
 
     private @Resource FlattrServiceFactory flattrServiceFactory;
 
-    private Set<String> languageSet = new HashSet<String>();
+    private Set<String> languageSet = new HashSet<>();
     private Date cacheExpiry;
 
     /**

@@ -46,6 +46,12 @@
     <dependencies>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
+            <artifactId>cilla-service</artifactId>
+            <version>0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-web</artifactId>
             <version>0.1-SNAPSHOT</version>
             <scope>compile</scope>

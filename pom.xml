@@ -55,14 +55,14 @@
             <dependency>
                 <groupId>org.shredzone</groupId>
                 <artifactId>bom</artifactId>
-                <version>1.0.0</version>
+                <version>1.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
     <properties>
-        <flattr4j.version>2.2</flattr4j.version>
+        <flattr4j.version>2.5</flattr4j.version>
     </properties>
     <modules>
         <module>cilla-plugin-flattr</module>

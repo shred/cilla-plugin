@@ -125,6 +125,9 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
                     return;
                 }
 
+                // URL cannot be changed if the page is already registered with Flattr
+                submission.setUrl(null);
+
                 Thing thing = service.getThing(thingId);
                 thing.merge(submission);
 

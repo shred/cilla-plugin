@@ -35,6 +35,7 @@ import org.shredzone.flattr4j.model.LanguageId;
 import org.shredzone.flattr4j.model.Submission;
 import org.shredzone.flattr4j.model.Thing;
 import org.shredzone.flattr4j.model.ThingId;
+import org.shredzone.flattr4j.model.UserId;
 import org.shredzone.flattr4j.oauth.AccessToken;
 import org.shredzone.flattr4j.spring.FlattrServiceFactory;
 import org.slf4j.Logger;
@@ -54,6 +55,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class FlattrPublicationServiceImpl implements FlattrPublicationService {
     public static final String FLATTR_SITE_ID = "flattr";
     public static final String PROPKEY_FLATTR_ID = "flattr.id";
+    public static final String PROPKEY_FLATTR_OWNER = "flattr.owner";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -95,6 +97,7 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
 
                 page.setDonateUrl(thing.getLink());
                 page.getProperties().put(PROPKEY_FLATTR_ID, thing.getThingId());
+                page.getProperties().put(PROPKEY_FLATTR_OWNER, thing.getUserId());
 
                 log.info("Registered page id " + page.getId() + ", Flattr thing " + thing.getThingId());
             } catch (FlattrException ex) {
@@ -157,6 +160,7 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
 
                 page.setDonateUrl(null);
                 page.getProperties().remove(PROPKEY_FLATTR_ID);
+                page.getProperties().remove(PROPKEY_FLATTR_OWNER);
 
                 log.info("Deleted page id " + page.getId() + ", Flattr thing " + thingId.getThingId());
             } catch (FlattrException ex) {
@@ -174,6 +178,23 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
     public ThingId getFlattrThing(Page page) {
         String fid = page.getProperties().get(PROPKEY_FLATTR_ID);
         return (fid != null ? Thing.withId(fid) : null);
+    }
+
+    @Override
+    public UserId getFlattrThingOwner(Page page) {
+        String oid = page.getProperties().get(PROPKEY_FLATTR_OWNER);
+        if (oid == null && isRegistered(page)) {
+            // Migration is required: older versions did not store flattr owner.
+            ThingId tid = getFlattrThing(page);
+            try {
+                Thing thing = flattrServiceFactory.getOpenService().getThing(tid);
+                oid = thing.getUserId();
+                page.getProperties().put(PROPKEY_FLATTR_OWNER, oid);
+            } catch (FlattrException ex) {
+                log.error("Cound not get flattr owner of thing ID " + tid, ex);
+            }
+        }
+        return (oid != null ? org.shredzone.flattr4j.model.User.withId(oid) : null);
     }
 
     @Override

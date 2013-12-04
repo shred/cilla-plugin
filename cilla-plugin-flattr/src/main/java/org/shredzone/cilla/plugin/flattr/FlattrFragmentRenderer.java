@@ -22,6 +22,7 @@ package org.shredzone.cilla.plugin.flattr;
 import java.io.IOException;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -33,11 +34,13 @@ import org.shredzone.cilla.web.header.DocumentHeader;
 import org.shredzone.cilla.web.header.DocumentHeaderObserver;
 import org.shredzone.cilla.web.header.tag.CssLinkTag;
 import org.shredzone.cilla.web.header.tag.JavaScriptLinkTag;
+import org.shredzone.cilla.web.header.tag.LinkTag;
 import org.shredzone.commons.view.annotation.PathPart;
 import org.shredzone.commons.view.annotation.View;
 import org.shredzone.commons.view.annotation.ViewHandler;
 import org.shredzone.flattr4j.model.Thing;
 import org.shredzone.flattr4j.model.ThingId;
+import org.shredzone.flattr4j.model.UserId;
 import org.springframework.stereotype.Component;
 
 /**
@@ -102,7 +105,7 @@ public class FlattrFragmentRenderer implements DocumentHeaderObserver {
      * Adds the flattr css and js to the page's header.
      */
     @Override
-    public void onNewDocumentHeader(DocumentHeader header) {
+    public void onNewDocumentHeader(DocumentHeader header, ServletRequest req) {
         if (flattrCssTag == null) {
             flattrCssTag = new CssLinkTag(linkService.linkTo()
                             .view("resource")
@@ -123,6 +126,15 @@ public class FlattrFragmentRenderer implements DocumentHeaderObserver {
 
         header.add(flattrCssTag);
         header.add(flattrJsTag);
+
+        Page page = (Page) req.getAttribute("page");
+        if (page != null) {
+            UserId owner = flattrPublicationService.getFlattrThingOwner(page);
+            if (owner != null) {
+                String profile = "https://flattr.com/profile/" + owner.getUserId();
+                header.add(new LinkTag("me", profile));
+            }
+        }
     };
 
 }

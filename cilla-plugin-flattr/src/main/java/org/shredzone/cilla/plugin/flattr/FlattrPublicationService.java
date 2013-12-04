@@ -21,6 +21,7 @@ package org.shredzone.cilla.plugin.flattr;
 
 import org.shredzone.cilla.core.model.Page;
 import org.shredzone.flattr4j.model.ThingId;
+import org.shredzone.flattr4j.model.UserId;
 
 /**
  * A service for {@link Page} related Flattr operations.
@@ -80,6 +81,15 @@ public interface FlattrPublicationService {
      * @return {@link ThingId}, or {@code null} if this page is not registered with Flattr
      */
     ThingId getFlattrThing(Page page);
+
+    /**
+     * Returns the owner's {@link UserId} of a page.
+     *
+     * @param page
+     *            {@link Page} to get the owner's {@link UserId} of
+     * @return {@link UserId}, or {@code null} if this page is not registered with Flattr
+     */
+    UserId getFlattrThingOwner(Page page);
 
     /**
      * Counts the number of Flattr clicks a thing received.

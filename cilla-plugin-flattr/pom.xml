@@ -28,24 +28,39 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
     <artifactId>cilla-plugin-flattr</artifactId>
-    <name>Cilla Plugin Flattr</name>
+    <name>Cilla Plugin: Flattr</name>
     <packaging>jar</packaging>
     <description>Cilla Plugin for adding pages to Flattr</description>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.shredzone.cilla</groupId>
+                <artifactId>cilla-bom</artifactId>
+                <version>0.1-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.shredzone.cilla.plugin</groupId>
+                <artifactId>cilla-plugin-bom</artifactId>
+                <version>0.1-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-core</artifactId>
-            <version>${cilla.version}</version>
         </dependency>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-service</artifactId>
-            <version>${cilla.version}</version>
         </dependency>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-web</artifactId>
-            <version>${cilla.version}</version>
         </dependency>
 
         <dependency>
@@ -55,7 +70,6 @@
         <dependency>
             <groupId>org.shredzone.flattr4j</groupId>
             <artifactId>flattr4j-core</artifactId>
-            <version>${flattr4j.version}</version>
         </dependency>
 
         <dependency>

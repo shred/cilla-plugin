@@ -29,19 +29,35 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
     <artifactId>cilla-plugin-sitemap</artifactId>
-    <name>Cilla Plugin Sitemap</name>
+    <name>Cilla Plugin: Sitemap</name>
     <packaging>jar</packaging>
     <description>Cilla Plugin for Sitemap</description>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.shredzone.cilla</groupId>
+                <artifactId>cilla-bom</artifactId>
+                <version>0.1-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.shredzone.cilla.plugin</groupId>
+                <artifactId>cilla-plugin-bom</artifactId>
+                <version>0.1-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-core</artifactId>
-            <version>${cilla.version}</version>
         </dependency>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-service</artifactId>
-            <version>${cilla.version}</version>
         </dependency>
 
         <dependency>

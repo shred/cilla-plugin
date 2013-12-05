@@ -29,24 +29,39 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
     <artifactId>cilla-plugin-social</artifactId>
-    <name>Cilla Plugin Social</name>
+    <name>Cilla Plugin: Social Bookmarks</name>
     <packaging>jar</packaging>
-    <description>Cilla Social Bookmark plugin</description>
+    <description>Cilla Social Bookmarks plugin</description>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.shredzone.cilla</groupId>
+                <artifactId>cilla-bom</artifactId>
+                <version>0.1-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.shredzone.cilla.plugin</groupId>
+                <artifactId>cilla-plugin-bom</artifactId>
+                <version>0.1-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-core</artifactId>
-            <version>${cilla.version}</version>
         </dependency>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-service</artifactId>
-            <version>${cilla.version}</version>
         </dependency>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-web</artifactId>
-            <version>${cilla.version}</version>
         </dependency>
 
         <dependency>

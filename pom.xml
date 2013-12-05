@@ -53,14 +53,11 @@
         </developer>
     </developers>
     <modules>
+        <module>cilla-plugin-bom</module>
         <module>cilla-plugin-flattr</module>
         <module>cilla-plugin-sitemap</module>
         <module>cilla-plugin-social</module>
     </modules>
-    <properties>
-        <cilla.version>0.1-SNAPSHOT</cilla.version>
-        <flattr4j.version>2.8</flattr4j.version>
-    </properties>
     <build>
         <plugins>
             <plugin>
@@ -135,15 +132,4 @@
             </plugin>
         </plugins>
     </reporting>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.shredzone.cilla</groupId>
-                <artifactId>cilla-bom</artifactId>
-                <version>${cilla.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 </project>

@@ -37,18 +37,14 @@
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-service</artifactId>
             <version>0.1-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.shredzone.commons</groupId>
             <artifactId>commons-view</artifactId>
-            <version>${commonsview.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

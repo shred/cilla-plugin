@@ -19,6 +19,8 @@
  */
 package org.shredzone.cilla.plugin.flattr;
 
+import java.util.concurrent.ExecutionException;
+
 import javax.annotation.Resource;
 
 import org.shredzone.cilla.core.model.Category;
@@ -27,6 +29,8 @@ import org.shredzone.cilla.core.model.Tag;
 import org.shredzone.cilla.core.model.Token;
 import org.shredzone.cilla.core.model.User;
 import org.shredzone.cilla.core.repository.TokenDao;
+import org.shredzone.cilla.plugin.flattr.collector.ClickFuture;
+import org.shredzone.cilla.plugin.flattr.collector.CollectingClickExecutor;
 import org.shredzone.cilla.service.link.LinkService;
 import org.shredzone.cilla.web.format.TextFormatter;
 import org.shredzone.flattr4j.FlattrService;
@@ -65,6 +69,7 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
     private @Value("${flattr.autotags}") String flattrAutotags;
 
     private @Resource FlattrServiceFactory flattrServiceFactory;
+    private @Resource CollectingClickExecutor clickExecutor;
     private @Resource FlattrLanguage flattrLanguage;
     private @Resource TextFormatter textFormatter;
     private @Resource TokenDao tokenDao;
@@ -202,10 +207,12 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
     public int clickCount(ThingId thingId) {
         if (thingId != null) {
             try {
-                Thing thing = flattrServiceFactory.getOpenService().getThing(thingId);
-                return thing.getClicks();
-            } catch (FlattrException ex) {
-                log.error("Cound not get flattr counts for thing ID " + thingId.getThingId(), ex);
+                ClickFuture future = new ClickFuture(thingId);
+                clickExecutor.submit(future);
+                Integer count = future.get();
+                return (count != null ? count : 0);
+            } catch (InterruptedException | ExecutionException ex) {
+                log.error("Failed to get flattr counts for thing ID " + thingId.getThingId(), ex);
             }
         }
 

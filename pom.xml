@@ -62,7 +62,7 @@
         </dependencies>
     </dependencyManagement>
     <properties>
-        <flattr4j.version>2.5</flattr4j.version>
+        <flattr4j.version>2.7</flattr4j.version>
     </properties>
     <modules>
         <module>cilla-plugin-flattr</module>

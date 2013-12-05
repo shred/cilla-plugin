@@ -35,20 +35,44 @@
     <dependencies>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
+            <artifactId>cilla-core</artifactId>
+            <version>${cilla.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-service</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${cilla.version}</version>
         </dependency>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-web</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${cilla.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.shredzone.commons</groupId>
+            <artifactId>commons-view</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
             <artifactId>jsp-api</artifactId>
             <scope>provided</scope>
         </dependency>

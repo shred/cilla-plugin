@@ -35,17 +35,25 @@
     <dependencies>
         <dependency>
             <groupId>org.shredzone.cilla</groupId>
-            <artifactId>cilla-service</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <artifactId>cilla-core</artifactId>
+            <version>${cilla.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.shredzone.cilla</groupId>
+            <artifactId>cilla-service</artifactId>
+            <version>${cilla.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.shredzone.commons</groupId>
             <artifactId>commons-view</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
+            <artifactId>spring-context</artifactId>
         </dependency>
+
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>

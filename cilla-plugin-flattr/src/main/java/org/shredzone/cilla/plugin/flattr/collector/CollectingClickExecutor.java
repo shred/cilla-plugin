@@ -30,9 +30,10 @@ import java.util.concurrent.Future;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import org.shredzone.cilla.plugin.flattr.FlattrPublicationService;
 import org.shredzone.flattr4j.exception.FlattrException;
+import org.shredzone.flattr4j.exception.NotFoundException;
 import org.shredzone.flattr4j.model.Thing;
-import org.shredzone.flattr4j.model.ThingId;
 import org.shredzone.flattr4j.spring.FlattrServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ public class CollectingClickExecutor extends Thread {
     private @Value("${flattr.collect.delay}") long collectDelay;
     private @Value("${flattr.collect.maxitems}") int collectMaxItems;
 
+    private @Resource FlattrPublicationService flattrPublicationService;
     private @Resource FlattrServiceFactory flattrServiceFactory;
 
     private final Queue<ClickFuture> queue = new ArrayDeque<>();
@@ -79,7 +81,7 @@ public class CollectingClickExecutor extends Thread {
 
     @Override
     public synchronized void run() {
-        final List<ThingId> thingCollection = new ArrayList<>();
+        final List<SomeThingId> thingCollection = new ArrayList<>();
         final Map<String, Thing> thingResult = new HashMap<>();
 
         while (true) {
@@ -106,12 +108,28 @@ public class CollectingClickExecutor extends Thread {
 
                 for (Thing t : flattrServiceFactory.getOpenService().getThings(thingCollection)) {
                     thingResult.put(t.getThingId(), t);
+                    thingCollection.remove(new SomeThingId(t));
+                }
+
+                if (!thingCollection.isEmpty()) {
+                    log.debug("Could not find some flattr counts");
+                    for (SomeThingId tid : thingCollection) {
+                        flattrPublicationService.unpublished(tid);
+                    }
+                }
+
+            } catch (NotFoundException ex) {
+                log.debug("Could not find all flattr counts", ex);
+                for (SomeThingId tid : thingCollection) {
+                    flattrPublicationService.unpublished(tid);
                 }
 
             } catch (FlattrException ex) {
                 log.error("Cound not bulk get flattr counts", ex);
+
             } catch (InterruptedException ex) {
                 // ignore and continue...
+
             } finally {
                 // Make sure all ClickCallables are going to be triggered...
                 for (ClickFuture c : processQueue) {

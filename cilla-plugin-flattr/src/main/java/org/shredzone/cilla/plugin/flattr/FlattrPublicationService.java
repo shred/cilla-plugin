@@ -100,4 +100,18 @@ public interface FlattrPublicationService {
      */
     int clickCount(ThingId thingId);
 
+    /**
+     * Notes that a {@link Page} has been unpublished by Flattr. Basically it removes all
+     * connections of the {@link Page} to the Flattr thing. If the {@code republish}
+     * configuration flag is set to {@code true}, a new Flattr thing will be generated if
+     * the page is updated. Otherwise, the {@code donatable} flag for this page is reset.
+     * <p>
+     * If no {@link Page} was found with this {@link ThingId}, or if the {@link Page} has
+     * already been unpublished, nothing will happen.
+     *
+     * @param thingId
+     *            {@link ThingId} of the unpublished page
+     */
+    void unpublished(ThingId thingId);
+
 }

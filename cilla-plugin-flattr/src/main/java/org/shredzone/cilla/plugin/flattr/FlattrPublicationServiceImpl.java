@@ -28,6 +28,7 @@ import org.shredzone.cilla.core.model.Page;
 import org.shredzone.cilla.core.model.Tag;
 import org.shredzone.cilla.core.model.Token;
 import org.shredzone.cilla.core.model.User;
+import org.shredzone.cilla.core.repository.PageDao;
 import org.shredzone.cilla.core.repository.TokenDao;
 import org.shredzone.cilla.plugin.flattr.collector.ClickFuture;
 import org.shredzone.cilla.plugin.flattr.collector.CollectingClickExecutor;
@@ -63,8 +64,9 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private @Value("${flattr.masterEnable}") boolean flattrMasterEnabled;
-    private @Value("${flattr.hidden}") boolean flattrHidden;
+    private @Value("${flattr.masterEnable?:false}") boolean flattrMasterEnabled;
+    private @Value("${flattr.hidden?:false}") boolean flattrHidden;
+    private @Value("${flattr.republish?:false}") boolean flattrRepublish;
     private @Value("${flattr.category}") String category;
     private @Value("${flattr.autotags}") String flattrAutotags;
 
@@ -72,6 +74,7 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
     private @Resource CollectingClickExecutor clickExecutor;
     private @Resource FlattrLanguage flattrLanguage;
     private @Resource TextFormatter textFormatter;
+    private @Resource PageDao pageDao;
     private @Resource TokenDao tokenDao;
     private @Resource LinkService linkService;
 
@@ -217,6 +220,19 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
         }
 
         return 0;
+    }
+
+    @Override
+    public void unpublished(ThingId thingId) {
+        for (Page page : pageDao.fetchHavingProperty(PROPKEY_FLATTR_ID, thingId.getThingId())) {
+            page.setDonateUrl(null);
+            page.getProperties().remove(PROPKEY_FLATTR_ID);
+            page.getProperties().remove(PROPKEY_FLATTR_OWNER);
+            if (!flattrRepublish) {
+                page.setDonatable(false);
+            }
+            log.info("Unregistered page id " + page.getId() + ", Flattr thing " + thingId);
+        }
     }
 
     /**

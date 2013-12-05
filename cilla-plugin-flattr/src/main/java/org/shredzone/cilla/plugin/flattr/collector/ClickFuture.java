@@ -36,7 +36,7 @@ import org.shredzone.flattr4j.model.ThingId;
  * @author Richard "Shred" Körber
  */
 public class ClickFuture implements Future<Integer> {
-    private final ThingId thingId;
+    private final SomeThingId thingId;
     private Integer result;
     private boolean completed = false;
     private boolean cancelled = false;
@@ -48,16 +48,16 @@ public class ClickFuture implements Future<Integer> {
      *            {@link ThingId} to count the clicks of
      */
     public ClickFuture(ThingId thingId) {
-        this.thingId = thingId;
+        this.thingId = new SomeThingId(thingId);
     }
 
     /**
      * Prepares the bulk request to Flattr.
      *
      * @param things
-     *            {@link Collection} of {@link ThingId} to add the own thing id to
+     *            {@link Collection} of {@link SomeThingId} to add the own thing id to
      */
-    public void prepareRequest(Collection<ThingId> things) {
+    public void prepareRequest(Collection<SomeThingId> things) {
         things.add(thingId);
     }
 

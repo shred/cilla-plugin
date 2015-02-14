@@ -28,10 +28,8 @@ import javax.annotation.Resource;
 import org.shredzone.cilla.core.model.Category;
 import org.shredzone.cilla.core.model.Page;
 import org.shredzone.cilla.core.model.Tag;
-import org.shredzone.cilla.core.model.Token;
 import org.shredzone.cilla.core.model.User;
 import org.shredzone.cilla.core.repository.PageDao;
-import org.shredzone.cilla.core.repository.TokenDao;
 import org.shredzone.cilla.plugin.flattr.collector.ClickFuture;
 import org.shredzone.cilla.plugin.flattr.collector.CollectingClickExecutor;
 import org.shredzone.cilla.service.link.LinkService;
@@ -61,15 +59,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class FlattrPublicationServiceImpl implements FlattrPublicationService {
-    public static final String FLATTR_SITE_ID = "flattr";
     public static final String PROPKEY_FLATTR_ID = "flattr.id";
     public static final String PROPKEY_FLATTR_OWNER = "flattr.owner";
+    public static final String PROPKEY_FLATTR_TOKEN = "flattr.token";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private @Value("${flattr.masterEnable?:false}") boolean flattrMasterEnabled;
-    private @Value("${flattr.hidden?:false}") boolean flattrHidden;
-    private @Value("${flattr.republish?:false}") boolean flattrRepublish;
+    private @Value("${flattr.masterEnable}") boolean flattrMasterEnabled;
+    private @Value("${flattr.hidden}") boolean flattrHidden;
+    private @Value("${flattr.republish}") boolean flattrRepublish;
     private @Value("${flattr.category}") String category;
     private @Value("${flattr.autotags}") String flattrAutotags;
 
@@ -78,7 +76,6 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
     private @Resource FlattrLanguage flattrLanguage;
     private @Resource TextFormatter textFormatter;
     private @Resource PageDao pageDao;
-    private @Resource TokenDao tokenDao;
     private @Resource LinkService linkService;
 
     @Override
@@ -262,8 +259,8 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
      * @return {@link AccessToken}, or {@code null} if the user has none
      */
     private AccessToken getAccessTokenForUser(User user) {
-        Token token = tokenDao.fetch(user, FLATTR_SITE_ID);
-        return (token != null ? new AccessToken(token.getToken()) : null);
+        String token = user.getProperties().get(PROPKEY_FLATTR_TOKEN);
+        return (token != null ? new AccessToken(token) : null);
     }
 
     /**

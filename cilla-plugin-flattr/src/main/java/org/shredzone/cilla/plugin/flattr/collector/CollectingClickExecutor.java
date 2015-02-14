@@ -102,9 +102,7 @@ public class CollectingClickExecutor extends Thread {
                     }
                 }
 
-                for (ClickFuture c : processQueue) {
-                    c.prepareRequest(thingCollection);
-                }
+                processQueue.forEach(c -> c.prepareRequest(thingCollection));
 
                 for (Thing t : flattrServiceFactory.getOpenService().getThings(thingCollection)) {
                     thingResult.put(t.getThingId(), t);
@@ -113,9 +111,7 @@ public class CollectingClickExecutor extends Thread {
 
                 if (!thingCollection.isEmpty()) {
                     log.debug("Could not find some flattr counts");
-                    for (SomeThingId tid : thingCollection) {
-                        flattrPublicationService.unpublished(tid);
-                    }
+                    thingCollection.forEach(flattrPublicationService::unpublished);
                 }
 
             } catch (NotFoundException ex) {
@@ -132,9 +128,7 @@ public class CollectingClickExecutor extends Thread {
 
             } finally {
                 // Make sure all ClickCallables are going to be triggered...
-                for (ClickFuture c : processQueue) {
-                    c.filterResult(thingResult);
-                }
+                processQueue.forEach(c -> c.filterResult(thingResult));
 
                 // ...and feed the GC
                 thingCollection.clear();

@@ -19,6 +19,7 @@
  */
 package org.shredzone.cilla.plugin.flattr;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Resource;
@@ -281,18 +282,11 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
         }
         thing.setLanguage(language);
 
-        for (Category cat : page.getCategories()) {
-            thing.addTag(cat.getName());
-        }
-
-        for (Tag tag : page.getTags()) {
-            thing.addTag(tag.getName());
-        }
+        page.getCategories().stream().map(Category::getName).forEach(thing::addTag);
+        page.getTags().stream().map(Tag::getName).forEach(thing::addTag);
 
         if (flattrAutotags != null && !flattrAutotags.isEmpty()) {
-            for (String autoTag : flattrAutotags.split(",")) {
-                thing.addTag(autoTag.trim());
-            }
+            Arrays.stream(flattrAutotags.split(",")).map(String::trim).forEach(thing::addTag);
         }
 
         thing.setHidden(flattrHidden);

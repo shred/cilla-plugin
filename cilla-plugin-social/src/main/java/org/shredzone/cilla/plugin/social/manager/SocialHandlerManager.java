@@ -19,14 +19,16 @@
  */
 package org.shredzone.cilla.plugin.social.manager;
 
+import static java.util.stream.Collectors.toList;
+
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -66,16 +68,10 @@ public class SocialHandlerManager {
      * @return List of {@link SocialLink}, may be empty but never {@code null}
      */
     public List<SocialLink> fetchLinksToPage(Page page) {
-        List<SocialLink> links = new ArrayList<>();
-
-        for (SocialHandlerInvoker invoker : invokers) {
-            SocialLink link = invoker.invoke(page);
-            if (link != null) {
-                links.add(link);
-            }
-        }
-
-        return links;
+        return invokers.stream()
+                .map(it -> it.invoke(page))
+                .filter(it -> it != null)
+                .collect(toList());
     }
 
     /**
@@ -85,13 +81,10 @@ public class SocialHandlerManager {
      */
     @PostConstruct
     public void setup() {
-        Set<String> blacklistSet = new HashSet<>();
-        for (String bl : blacklist.split("[,;]+")) {
-            bl = bl.trim();
-            if (!bl.isEmpty()) {
-                blacklistSet.add(bl);
-            }
-        }
+        Set<String> blacklistSet = Arrays.stream(blacklist.split("[,;]+"))
+                .map(String::trim)
+                .filter(it -> !it.isEmpty())
+                .collect(Collectors.toSet());
 
         Collection<Object> beans = applicationContext.getBeansWithAnnotation(SocialHandler.class).values();
         for (Object bean : beans) {

@@ -92,14 +92,13 @@ public class FlattrLanguage {
 
         // Find the next language code that starts with the language
         language += '_';
-        for (String test : languageSet) {
-            if (test.startsWith(language)) {
-                return Language.withId(test);
-            }
-        }
 
-        // The language is not supported by Flattr
-        return null;
+        final String languageF = language;
+        return languageSet.stream()
+                .filter(it -> it.startsWith(languageF))
+                .map(Language::withId)
+                .findFirst()
+                .orElse(null); // The language is not supported by Flattr
     }
 
     /**
@@ -138,13 +137,13 @@ public class FlattrLanguage {
                 return;
             }
 
-            List<Language> languageList;
             try {
-                languageList = flattrServiceFactory.getOpenService().getLanguages();
+                List<Language> languageList = flattrServiceFactory.getFlattrService().getLanguages();
                 languageSet.clear();
-                for (Language lang : languageList) {
-                    languageSet.add(lang.getLanguageId());
-                }
+
+                languageList.stream()
+                        .map(Language::getLanguageId)
+                        .forEach(languageSet::add);
                 cacheExpiry = new Date(now.getTime() + (cacheLifetime * 1000L));
             } catch (FlattrException ex) {
                 log.warn("Failed to update Flattr language list", ex);

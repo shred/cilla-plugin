@@ -5,15 +5,15 @@
     <parent>
         <groupId>org.shredzone.cilla.plugin</groupId>
         <artifactId>cilla-plugin</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.2-SNAPSHOT</version>
     </parent>
     <artifactId>cilla-plugin-bom</artifactId>
     <packaging>pom</packaging>
     <name>Cilla Plugins Bill of Materials</name>
     <description>Cilla Plugins Bill of Materials</description>
     <properties>
-        <cilla.version>0.1-SNAPSHOT</cilla.version>
-        <flattr4j.version>2.8</flattr4j.version>
+        <cilla.version>0.2-SNAPSHOT</cilla.version>
+        <flattr4j.version>2.10</flattr4j.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -32,10 +32,15 @@
                 <artifactId>cilla-web</artifactId>
                 <version>${cilla.version}</version>
             </dependency>
-    
+
             <dependency>
                 <groupId>org.shredzone.flattr4j</groupId>
                 <artifactId>flattr4j-core</artifactId>
+                <version>${flattr4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.shredzone.flattr4j</groupId>
+                <artifactId>flattr4j-async</artifactId>
                 <version>${flattr4j.version}</version>
             </dependency>
         </dependencies>

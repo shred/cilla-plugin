@@ -27,10 +27,9 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.shredzone.flattr4j.exception.FlattrException;
+import org.shredzone.flattr4j.async.common.GetLanguagesMethod;
 import org.shredzone.flattr4j.model.Language;
 import org.shredzone.flattr4j.model.LanguageId;
-import org.shredzone.flattr4j.spring.FlattrServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +46,7 @@ public class FlattrLanguage {
 
     private @Value("${flattr.languagecache.ttl}") long cacheLifetime;
 
-    private @Resource FlattrServiceFactory flattrServiceFactory;
+    private @Resource FlattrQueue flattrQueue;
 
     private Set<String> languageSet = new HashSet<>();
     private Date cacheExpiry;
@@ -138,14 +137,16 @@ public class FlattrLanguage {
             }
 
             try {
-                List<Language> languageList = flattrServiceFactory.getFlattrService().getLanguages();
+                GetLanguagesMethod method = new GetLanguagesMethod();
+                List<Language> languageList = flattrQueue.submit(method).get();
+
                 languageSet.clear();
 
                 languageList.stream()
                         .map(Language::getLanguageId)
                         .forEach(languageSet::add);
                 cacheExpiry = new Date(now.getTime() + (cacheLifetime * 1000L));
-            } catch (FlattrException ex) {
+            } catch (Exception ex) {
                 log.warn("Failed to update Flattr language list", ex);
             }
         }

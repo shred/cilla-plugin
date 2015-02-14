@@ -21,6 +21,7 @@ package org.shredzone.cilla.plugin.flattr;
 
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.annotation.Resource;
 
@@ -35,15 +36,16 @@ import org.shredzone.cilla.plugin.flattr.collector.ClickFuture;
 import org.shredzone.cilla.plugin.flattr.collector.CollectingClickExecutor;
 import org.shredzone.cilla.service.link.LinkService;
 import org.shredzone.cilla.web.format.TextFormatter;
-import org.shredzone.flattr4j.FlattrService;
-import org.shredzone.flattr4j.exception.FlattrException;
+import org.shredzone.flattr4j.async.thing.CreateMethod;
+import org.shredzone.flattr4j.async.thing.DeleteMethod;
+import org.shredzone.flattr4j.async.thing.GetThingMethod;
+import org.shredzone.flattr4j.async.thing.UpdateMethod;
 import org.shredzone.flattr4j.model.LanguageId;
 import org.shredzone.flattr4j.model.Submission;
 import org.shredzone.flattr4j.model.Thing;
 import org.shredzone.flattr4j.model.ThingId;
 import org.shredzone.flattr4j.model.UserId;
 import org.shredzone.flattr4j.oauth.AccessToken;
-import org.shredzone.flattr4j.spring.FlattrServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,7 +73,7 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
     private @Value("${flattr.category}") String category;
     private @Value("${flattr.autotags}") String flattrAutotags;
 
-    private @Resource FlattrServiceFactory flattrServiceFactory;
+    private @Resource FlattrQueue flattrQueue;
     private @Resource CollectingClickExecutor clickExecutor;
     private @Resource FlattrLanguage flattrLanguage;
     private @Resource TextFormatter textFormatter;
@@ -100,16 +102,23 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
         AccessToken at = getAccessTokenForUser(page.getCreator());
         if (at != null) {
             try {
-                FlattrService service = flattrServiceFactory.getFlattrService(at);
+                CreateMethod create = new CreateMethod();
+                create.setAccessToken(at);
+                create.setSubmission(submission);
+                Future<ThingId> fThingId = flattrQueue.submit(create);
 
-                Thing thing = service.getThing(service.create(submission));
+                GetThingMethod getThing = new GetThingMethod();
+                getThing.setAccessToken(at);
+                getThing.setThingId(fThingId.get());
+                Future<Thing> fThing = flattrQueue.submit(getThing);
 
+                Thing thing = fThing.get();
                 page.setDonateUrl(thing.getLink());
                 page.getProperties().put(PROPKEY_FLATTR_ID, thing.getThingId());
                 page.getProperties().put(PROPKEY_FLATTR_OWNER, thing.getUserId());
 
                 log.info("Registered page id " + page.getId() + ", Flattr thing " + thing.getThingId());
-            } catch (FlattrException ex) {
+            } catch (Exception ex) {
                 log.warn("Failed to submit a Flattr Thing for page id " + page.getId(), ex);
             }
         }
@@ -127,8 +136,6 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
 
         if (thingId != null && at != null) {
             try {
-                FlattrService service = flattrServiceFactory.getFlattrService(at);
-
                 Submission submission = createSubmissionForPage(page);
                 if (submission == null) {
                     // The update would be invalid
@@ -140,13 +147,20 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
                 // URL cannot be changed if the page is already registered with Flattr
                 submission.setUrl(null);
 
-                Thing thing = service.getThing(thingId);
+                GetThingMethod getThing = new GetThingMethod();
+                getThing.setAccessToken(at);
+                getThing.setThingId(thingId);
+                Thing thing = flattrQueue.submit(getThing).get();
+
                 thing.merge(submission);
 
-                service.update(thing);
+                UpdateMethod update = new UpdateMethod();
+                update.setAccessToken(at);
+                update.setThing(thing);
+                flattrQueue.submit(update).get();
 
                 log.info("Updated page id " + page.getId() + ", Flattr thing " + thing.getThingId());
-            } catch (FlattrException ex) {
+            } catch (Exception ex) {
                 log.warn("Failed to update a Flattr Thing for page id " + page.getId(), ex);
             }
         }
@@ -164,15 +178,17 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
 
         if (thingId != null && at != null) {
             try {
-                FlattrService service = flattrServiceFactory.getFlattrService(at);
-                service.delete(thingId);
+                DeleteMethod delete = new DeleteMethod();
+                delete.setAccessToken(at);
+                delete.setThingId(thingId);
+                flattrQueue.submit(delete).get();
 
                 page.setDonateUrl(null);
                 page.getProperties().remove(PROPKEY_FLATTR_ID);
                 page.getProperties().remove(PROPKEY_FLATTR_OWNER);
 
                 log.info("Deleted page id " + page.getId() + ", Flattr thing " + thingId.getThingId());
-            } catch (FlattrException ex) {
+            } catch (Exception ex) {
                 log.warn("Failed to delete a Flattr Thing for page id " + page.getId(), ex);
             }
         }
@@ -196,10 +212,12 @@ public class FlattrPublicationServiceImpl implements FlattrPublicationService {
             // Migration is required: older versions did not store flattr owner.
             ThingId tid = getFlattrThing(page);
             try {
-                Thing thing = flattrServiceFactory.getOpenService().getThing(tid);
+                GetThingMethod getThing = new GetThingMethod();
+                getThing.setThingId(tid);
+                Thing thing = flattrQueue.submit(getThing).get();
                 oid = thing.getUserId();
                 page.getProperties().put(PROPKEY_FLATTR_OWNER, oid);
-            } catch (FlattrException ex) {
+            } catch (Exception ex) {
                 log.error("Cound not get flattr owner of thing ID " + tid, ex);
             }
         }

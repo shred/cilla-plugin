@@ -19,7 +19,6 @@
  */
 package org.shredzone.cilla.plugin.flattr.collector;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -52,13 +51,10 @@ public class ClickFuture implements Future<Integer> {
     }
 
     /**
-     * Prepares the bulk request to Flattr.
-     *
-     * @param things
-     *            {@link Collection} of {@link SomeThingId} to add the own thing id to
+     * Returns the {@link SomeThingId} associated with this {@link ClickFuture}.
      */
-    public void prepareRequest(Collection<SomeThingId> things) {
-        things.add(thingId);
+    public SomeThingId getThingId() {
+        return thingId;
     }
 
     /**

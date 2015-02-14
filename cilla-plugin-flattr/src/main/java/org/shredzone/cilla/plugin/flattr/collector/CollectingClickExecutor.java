@@ -25,16 +25,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.shredzone.cilla.plugin.flattr.FlattrPublicationService;
-import org.shredzone.flattr4j.exception.FlattrException;
+import org.shredzone.cilla.plugin.flattr.FlattrQueue;
+import org.shredzone.flattr4j.async.thing.GetThingsFromCollectionMethod;
 import org.shredzone.flattr4j.exception.NotFoundException;
 import org.shredzone.flattr4j.model.Thing;
-import org.shredzone.flattr4j.spring.FlattrServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,7 +57,7 @@ public class CollectingClickExecutor extends Thread {
     private @Value("${flattr.collect.maxitems}") int collectMaxItems;
 
     private @Resource FlattrPublicationService flattrPublicationService;
-    private @Resource FlattrServiceFactory flattrServiceFactory;
+    private @Resource FlattrQueue flattrQueue;
 
     private final Queue<ClickFuture> queue = new ArrayDeque<>();
     private final Queue<ClickFuture> processQueue = new ArrayDeque<>();
@@ -102,9 +104,15 @@ public class CollectingClickExecutor extends Thread {
                     }
                 }
 
-                processQueue.forEach(c -> c.prepareRequest(thingCollection));
+                thingCollection.clear();
+                thingCollection.addAll(processQueue.stream()
+                                .map(ClickFuture::getThingId)
+                                .collect(Collectors.toList()));
 
-                for (Thing t : flattrServiceFactory.getOpenService().getThings(thingCollection)) {
+                GetThingsFromCollectionMethod method = new GetThingsFromCollectionMethod(thingCollection);
+                List<Thing> things = flattrQueue.submit(method).get();
+
+                for (Thing t : things) {
                     thingResult.put(t.getThingId(), t);
                     thingCollection.remove(new SomeThingId(t));
                 }
@@ -114,17 +122,19 @@ public class CollectingClickExecutor extends Thread {
                     thingCollection.forEach(flattrPublicationService::unpublished);
                 }
 
-            } catch (NotFoundException ex) {
-                log.debug("Could not find all flattr counts", ex);
-                for (SomeThingId tid : thingCollection) {
-                    flattrPublicationService.unpublished(tid);
+            } catch (ExecutionException ex) {
+                Throwable t = ex.getCause();
+                if (t instanceof NotFoundException) {
+                    log.debug("Could not find all flattr counts", t);
+                    for (SomeThingId tid : thingCollection) {
+                        flattrPublicationService.unpublished(tid);
+                    }
+                } else {
+                    log.error("Cound not bulk get flattr counts", ex);
                 }
 
-            } catch (FlattrException ex) {
-                log.error("Cound not bulk get flattr counts", ex);
-
             } catch (InterruptedException ex) {
-                // ignore and continue...
+                log.error("Cound not bulk get flattr counts", ex);
 
             } finally {
                 // Make sure all ClickCallables are going to be triggered...

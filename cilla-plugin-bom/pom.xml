@@ -13,7 +13,7 @@
     <description>Cilla Plugins Bill of Materials</description>
     <properties>
         <cilla.version>0.2-SNAPSHOT</cilla.version>
-        <flattr4j.version>2.10</flattr4j.version>
+        <flattr4j.version>2.12</flattr4j.version>
     </properties>
     <dependencyManagement>
         <dependencies>

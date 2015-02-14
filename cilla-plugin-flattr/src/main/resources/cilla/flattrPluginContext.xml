@@ -30,8 +30,8 @@
     <bean id="flattrServiceFactory" class="org.shredzone.flattr4j.spring.DefaultFlattrServiceFactory">
         <constructor-arg>
             <bean class="org.shredzone.flattr4j.oauth.ConsumerKey">
-                <property name="key" value="${flattr.auth.key}"/>
-                <property name="secret" value="${flattr.auth.secret}"/>
+                <constructor-arg index="0" value="${flattr.auth.key}"/>
+                <constructor-arg index="1" value="${flattr.auth.secret}"/>
             </bean>
         </constructor-arg>
     </bean>

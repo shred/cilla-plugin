@@ -45,7 +45,7 @@ public class TumblrEventListener {
      */
     @OnEvent(EventType.PAGE_PUBLISH)
     public void onPagePublish(Page page) {
-        if (!tumblrPublicationService.isRegistered(page)) {
+        if (page.isPromoted() && !tumblrPublicationService.isRegistered(page)) {
             tumblrPublicationService.publish(page);
         }
     }
@@ -58,10 +58,13 @@ public class TumblrEventListener {
     @OnEvent(EventType.PAGE_UPDATE)
     public void onPageUpdate(Page page) {
         if (page.isPublishedState() && page.getPublication() != null) {
-            if (tumblrPublicationService.isRegistered(page)) {
-                tumblrPublicationService.update(page);
-            } else {
+            boolean isRegistered = tumblrPublicationService.isRegistered(page);
+            if (page.isPromoted() && !isRegistered) {
                 tumblrPublicationService.publish(page);
+            } else if (page.isPromoted() && isRegistered) {
+                tumblrPublicationService.update(page);
+            } else if (!page.isPromoted() && isRegistered) {
+                tumblrPublicationService.remove(page);
             }
         }
     }

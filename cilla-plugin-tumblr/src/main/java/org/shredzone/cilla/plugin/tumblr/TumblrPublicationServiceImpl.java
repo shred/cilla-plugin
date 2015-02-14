@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
@@ -34,6 +35,7 @@ import org.shredzone.cilla.core.model.Page;
 import org.shredzone.cilla.core.model.Tag;
 import org.shredzone.cilla.core.model.User;
 import org.shredzone.cilla.core.repository.PageDao;
+import org.shredzone.cilla.service.link.LinkBuilder;
 import org.shredzone.cilla.service.link.LinkService;
 import org.shredzone.cilla.web.format.TextFormatter;
 import org.slf4j.Logger;
@@ -204,10 +206,13 @@ public class TumblrPublicationServiceImpl implements TumblrPublicationService {
      */
     private void pageToPost(Page page, TextPost post) {
         try {
-            String url = linkService.linkTo().page(page).external().toString();
+            Supplier<LinkBuilder> linkBuilderSupplier =
+                            () -> linkService.linkTo().page(page).external();
+
+            String url = linkBuilderSupplier.get().toString();
 
             StringBuilder sb = new StringBuilder();
-            sb.append(textFormatter.format(page.getTeaser()));
+            sb.append(textFormatter.format(page.getTeaser(), linkBuilderSupplier));
             sb.append("<p><a href=").append(URLEncoder.encode(url, "utf8")).append('>').append(url).append("</a></p>");
 
             post.setDate(page.getPublication());

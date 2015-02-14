@@ -57,6 +57,7 @@
         <module>cilla-plugin-flattr</module>
         <module>cilla-plugin-sitemap</module>
         <module>cilla-plugin-social</module>
+        <module>cilla-plugin-tumblr</module>
     </modules>
     <build>
         <plugins>

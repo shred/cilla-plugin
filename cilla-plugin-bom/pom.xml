@@ -14,6 +14,7 @@
     <properties>
         <cilla.version>0.2-SNAPSHOT</cilla.version>
         <flattr4j.version>2.12</flattr4j.version>
+        <jumblr.version>0.0.11</jumblr.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -33,6 +34,11 @@
                 <version>${cilla.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.tumblr</groupId>
+                <artifactId>jumblr</artifactId>
+                <version>${jumblr.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.shredzone.flattr4j</groupId>
                 <artifactId>flattr4j-core</artifactId>

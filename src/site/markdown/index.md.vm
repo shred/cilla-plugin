@@ -1,0 +1,18 @@
+cilla-plugin
+============
+
+_Cilla_ is a weblog written in Java.
+
+This project contains some optional plugins that extend _Cilla_.
+
+Plugins
+-------
+
+* [`cilla-plugin-sitemap`](./cilla-plugin-sitemap/index.html) - Generates a `sitemap.xml` file for web crawlers.
+* [`cilla-plugin-social`](./cilla-plugin-social/index.html) - Links to social web pages.
+* [`cilla-plugin-tumblr`](./cilla-plugin-tumblr/index.html) -  Synchronizes blog articles with [tumblr](https://www.tumblr.com/).
+
+License
+-------
+
+The source code can be found at [GitHub](https://github.com/shred/cilla-plugin) and is distributed under the terms of [GNU Affero General Public License Version 3](http://www.gnu.org/licenses/agpl-3.0.html).

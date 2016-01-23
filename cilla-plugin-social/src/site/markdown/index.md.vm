@@ -1,0 +1,24 @@
+cilla-plugin-social
+===================
+
+_Cilla_ is a weblog written in Java.
+
+This plugin creates a number of links to social web pages.
+
+Integration
+-----------
+
+Add this snippet to your blog's `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>${project.groupId}</groupId>
+  <artifactId>${project.artifactId}</artifactId>
+  <version>${project.version}</version>
+</dependency>
+```
+
+License
+-------
+
+The source code can be found at [GitHub](https://github.com/shred/cilla-plugin) and is distributed under the terms of [GNU Affero General Public License Version 3](http://www.gnu.org/licenses/agpl-3.0.html).

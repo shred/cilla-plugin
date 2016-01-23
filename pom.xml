@@ -54,7 +54,6 @@
     </developers>
     <modules>
         <module>cilla-plugin-bom</module>
-        <module>cilla-plugin-flattr</module>
         <module>cilla-plugin-sitemap</module>
         <module>cilla-plugin-social</module>
         <module>cilla-plugin-tumblr</module>

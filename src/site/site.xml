@@ -32,7 +32,11 @@
       <item name="shredzone.org" href="http://www.shredzone.org"/>
       <item name="cilla-plugin" href="index.html"/>
     </breadcrumbs>
-    <menu ref="modules"/>
+    <menu name="Plugins">
+      <item name="Sitemap" href="./cilla-plugin-sitemap/index.html"/>
+      <item name="Social" href="./cilla-plugin-social/index.html"/>
+      <item name="Tumblr" href="./cilla-plugin-tumblr/index.html"/>
+    </menu>
     <menu ref="reports"/>
   </body>
 

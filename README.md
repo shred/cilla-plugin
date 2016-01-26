@@ -1,6 +1,6 @@
 # cilla-plugin ![build status](https://jenkins.shredzone.net/project/cilla-plugin/builds/status.png?ref=master)
 
-_Cilla_ is a weblog written in Java.
+[Cilla](http://cilla.shredzone.org) is a weblog written in Java.
 
 This project contains some optional plugins that extend _Cilla_.
 

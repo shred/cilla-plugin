@@ -1,4 +1,4 @@
-# cilla-plugin ![build status](https://jenkins.shredzone.net/project/cilla-plugin/builds/status.png?ref=master)
+# cilla-plugin ![build status](https://shredzone.org/badge/cilla-plugin.svg)
 
 [Cilla](http://cilla.shredzone.org) is a weblog written in Java.
 

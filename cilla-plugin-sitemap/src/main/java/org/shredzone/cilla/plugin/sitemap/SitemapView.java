@@ -33,6 +33,7 @@ import org.shredzone.cilla.service.link.LinkService;
 import org.shredzone.commons.view.annotation.View;
 import org.shredzone.commons.view.annotation.ViewHandler;
 import org.shredzone.commons.view.exception.ViewException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -43,6 +44,8 @@ import org.springframework.stereotype.Component;
 @ViewHandler
 @Component
 public class SitemapView {
+
+    private @Value("${sitemap.skipHidden}") boolean skipHidden;
 
     private @Resource PageDao pageDao;
     private @Resource LinkService linkService;
@@ -93,6 +96,10 @@ public class SitemapView {
      */
     private void writePages(SitemapWriter writer) throws IOException {
         for (Page page : pageDao.fetchAllPublic()) {
+            if (page.isHidden() && skipHidden) {
+                continue;
+            }
+
             String pageUrl;
             if (page.getName() != null) {
                 pageUrl = linkService.linkTo().param("pagename", page.getName()).absolute().toString();

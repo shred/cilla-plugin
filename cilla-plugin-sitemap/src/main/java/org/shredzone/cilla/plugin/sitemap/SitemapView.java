@@ -93,7 +93,12 @@ public class SitemapView {
      */
     private void writePages(SitemapWriter writer) throws IOException {
         for (Page page : pageDao.fetchAllPublic()) {
-            String pageUrl = linkService.linkTo().page(page).absolute().toString();
+            String pageUrl;
+            if (page.getName() != null) {
+                pageUrl = linkService.linkTo().param("pagename", page.getName()).absolute().toString();
+            } else {
+                pageUrl = linkService.linkTo().page(page).absolute().toString();
+            }
 
             Float priority = null;
             if (page.isHidden()) {

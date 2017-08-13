@@ -19,9 +19,17 @@
  */
 package org.shredzone.cilla.plugin.twitter;
 
+import static java.util.stream.Collectors.toList;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.shredzone.cilla.core.model.Page;
@@ -53,13 +61,13 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
     public static final String PROPKEY_TWITTER_SECRET = "twitter.secret";
 
     private static final int MAX_TWEET_LENGTH = 140;
-    private static final String SEPARATOR = " - ";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private @Value("${twitter.masterEnable}") boolean twitterMasterEnabled;
     private @Value("${twitter.useTags}") boolean twitterUseTags;
-    private @Value("${twitter.fixedHashtags}") String twitterFixedHashtags;
+    private @Value("${twitter.fixedTags}") String twitterFixedTags;
+    private @Value("${twitter.separator}") String twitterSeparator;
 
     private @Resource TwitterServiceFactory twitterServiceFactory;
     private @Resource TextFormatter textFormatter;
@@ -68,6 +76,12 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
 
     private int shortUrlLength;
     private Instant shortUrlLengthValidUntil;
+    private List<String> fixedTags;
+
+    @PostConstruct
+    public void setup() {
+        fixedTags = Collections.unmodifiableList(splitTags(twitterFixedTags));
+    }
 
     @Override
     public void publish(Page page) {
@@ -180,11 +194,12 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
             body = page.getTitle();
         }
 
-        String fixedHashtags = twitterFixedHashtags != null && !twitterFixedHashtags.trim().isEmpty()
-                        ? " " + twitterFixedHashtags.trim()
-                        : "";
+        String separator = " ";
+        if (twitterSeparator != null && !twitterSeparator.trim().isEmpty()) {
+            separator = " " + twitterSeparator.trim() + " ";
+        }
 
-        int maxBodyLength = MAX_TWEET_LENGTH - fixedHashtags.length() - SEPARATOR.length() - shortUrlLength;
+        int maxBodyLength = MAX_TWEET_LENGTH - separator.length() - shortUrlLength;
         if (body.length() > maxBodyLength) {
             StringBuilder trunc = new StringBuilder(body);
             int truncpos = trunc.lastIndexOf(" ", maxBodyLength - 1);
@@ -197,17 +212,67 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
         }
 
         if (twitterUseTags) {
-            for (Tag tag : page.getTags()) {
-                String tagName = " #" + tag.getName().replaceAll("(\\s|#)+", "");
-                if (body.length() + tagName.length() <= maxBodyLength) {
-                    body += tagName;
-                }
-            }
+            List<String> tags = new ArrayList<>(fixedTags);
+            page.getTags().stream()
+                    .map(Tag::getName)
+                    .map(String::trim)
+                    .map(t -> t.replaceAll("(\\s|#)+", ""))
+                    .distinct()
+                    .forEach(tags::add);
+            body = taginize(body, tags, maxBodyLength);
         }
 
         String pageUrl = linkService.linkTo().page(page).external().toString();
 
-        return body + fixedHashtags + SEPARATOR + pageUrl;
+        return body + separator + pageUrl;
+    }
+
+    /**
+     * Fills the body with as many tags as possible. If a tag is found as word, it is
+     * replaced by the tag. Remaning tags are appended. The given maximum length will not
+     * be exceeded.
+     *
+     * @param body
+     *            Body to add tags to
+     * @param tags
+     *            Tags to add
+     * @param maxLen
+     *            Maximum body length
+     * @return Body, with tags inserted
+     */
+    public static String taginize(String body, List<String> tags, int maxLen) {
+        for (String tag : tags) {
+            Pattern pat = Pattern.compile("(^.*\\b(?<!#))(" + Pattern.quote(tag) + ")(\\b.*$)");
+            Matcher m = pat.matcher(body);
+            if (m.matches() && body.length() + 1 <= maxLen) {
+                body = m.replaceFirst("$1#$2$3");
+            } else if (Pattern.matches(("(^|.*\\s)#" + Pattern.quote(tag) + "\\b.*$"), body)) {
+                // Tag is already part of the body, ignore
+            } else if (body.length() + tag.length() + 2 <= maxLen) {
+                body += " #" + tag;
+            }
+        }
+        return body;
+    }
+
+    /**
+     * Splits a string of tags to a list of single tags.
+     *
+     * @param tagList
+     *            List of tags, separated by non-word characters.
+     * @return List of separated tags.
+     */
+    public static List<String> splitTags(String tagList) {
+        if (tagList == null || tagList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return Pattern.compile("[ ,;]+").splitAsStream(tagList)
+                .map(String::trim)
+                .map(it -> it.replaceAll("^#", ""))
+                .filter(it -> !it.isEmpty())
+                .distinct()
+                .collect(toList());
     }
 
     /**

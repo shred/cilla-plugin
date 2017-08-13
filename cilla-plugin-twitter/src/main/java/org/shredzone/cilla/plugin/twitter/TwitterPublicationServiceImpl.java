@@ -25,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import javax.annotation.Resource;
 
 import org.shredzone.cilla.core.model.Page;
+import org.shredzone.cilla.core.model.Tag;
 import org.shredzone.cilla.core.model.User;
 import org.shredzone.cilla.core.repository.PageDao;
 import org.shredzone.cilla.service.link.LinkService;
@@ -57,6 +58,8 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private @Value("${twitter.masterEnable}") boolean twitterMasterEnabled;
+    private @Value("${twitter.useTags}") boolean twitterUseTags;
+    private @Value("${twitter.fixedHashtags}") String twitterFixedHashtags;
 
     private @Resource TwitterServiceFactory twitterServiceFactory;
     private @Resource TextFormatter textFormatter;
@@ -177,7 +180,11 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
             body = page.getTitle();
         }
 
-        int maxBodyLength = MAX_TWEET_LENGTH - SEPARATOR.length() - shortUrlLength;
+        String fixedHashtags = twitterFixedHashtags != null && !twitterFixedHashtags.trim().isEmpty()
+                        ? " " + twitterFixedHashtags.trim()
+                        : "";
+
+        int maxBodyLength = MAX_TWEET_LENGTH - fixedHashtags.length() - SEPARATOR.length() - shortUrlLength;
         if (body.length() > maxBodyLength) {
             StringBuilder trunc = new StringBuilder(body);
             int truncpos = trunc.lastIndexOf(" ", maxBodyLength - 1);
@@ -189,9 +196,18 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
             body = trunc.toString();
         }
 
+        if (twitterUseTags) {
+            for (Tag tag : page.getTags()) {
+                String tagName = " #" + tag.getName().replaceAll("(\\s|#)+", "");
+                if (body.length() + tagName.length() <= maxBodyLength) {
+                    body += tagName;
+                }
+            }
+        }
+
         String pageUrl = linkService.linkTo().page(page).external().toString();
 
-        return body + SEPARATOR + pageUrl;
+        return body + fixedHashtags + SEPARATOR + pageUrl;
     }
 
     /**

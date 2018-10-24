@@ -59,6 +59,10 @@
             <groupId>org.shredzone.cilla</groupId>
             <artifactId>cilla-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.shredzone.cilla</groupId>
+            <artifactId>cilla-web</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.shredzone.commons</groupId>
@@ -73,6 +77,11 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>javax.servlet.jsp-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

@@ -22,6 +22,7 @@ package org.shredzone.cilla.plugin.sitemap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -40,15 +41,6 @@ public class SitemapWriter extends OutputStreamWriter {
 
     private final DecimalFormat priorityFormat;
     private final SimpleDateFormat dateFormat;
-
-    /**
-     * Enumeration of update frequencies.
-     *
-     * @see <a href="http://www.sitemaps.org/protocol.html#changefreqdef">sitemaps protocol</a>
-     */
-    public static enum Frequency {
-        ALWAYS, HOURLY, DAILY, WEEKLY, MONTHLY, YEARLY, NEVER;
-    }
 
     /**
      * Instantiates a new {@link SitemapWriter}.
@@ -83,16 +75,17 @@ public class SitemapWriter extends OutputStreamWriter {
      * @param changeFreq
      *            Change frequency, or {@code null} if unknown
      * @param priority
-     *            Priority of the page in the sitemap (between 0f and 1f), or {@code null}
-     *            for default priority
+     *            Priority of the page in the sitemap (between 0.0 and 1.0), or
+     *            {@code null} for default priority
      */
-    public void writeUrl(String url, Date lastmod, Frequency changeFreq, Float priority)
+    public void writeUrl(String url, Date lastmod, Frequency changeFreq, BigDecimal priority)
     throws IOException {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("url must be set");
         }
 
-        if (priority != null && (priority < 0f || priority > 1f)) {
+        if (priority != null &&
+                (priority.compareTo(BigDecimal.ZERO) < 0 || priority.compareTo(BigDecimal.ONE) > 0)) {
             throw new IllegalArgumentException("priority out of range: " + priority);
         }
 

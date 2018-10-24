@@ -19,10 +19,17 @@
  */
 package org.shredzone.cilla.plugin.sitemap;
 
+import static java.util.stream.Collectors.*;
+
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPOutputStream;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,10 +37,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.shredzone.cilla.core.model.Page;
 import org.shredzone.cilla.core.repository.PageDao;
 import org.shredzone.cilla.service.link.LinkService;
+import org.shredzone.cilla.web.plugin.manager.PriorityComparator;
 import org.shredzone.commons.view.annotation.View;
 import org.shredzone.commons.view.annotation.ViewHandler;
 import org.shredzone.commons.view.exception.ViewException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 /**
@@ -49,6 +58,19 @@ public class SitemapView {
 
     private @Resource PageDao pageDao;
     private @Resource LinkService linkService;
+    private @Resource ApplicationContext applicationContext;
+
+    private List<SitemapInterceptor> interceptors;
+
+    /**
+     * Initializes the list of feed view interceptors.
+     */
+    @PostConstruct
+    protected void setup() {
+        interceptors = applicationContext.getBeansOfType(SitemapInterceptor.class).values().stream()
+                .sorted(new PriorityComparator<>(SitemapInterceptor.class))
+                .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+    }
 
     /**
      * Renders a sitemap of all pages.
@@ -85,7 +107,7 @@ public class SitemapView {
     private void writeHome(SitemapWriter writer) throws IOException {
         Date[] minMaxDates = pageDao.fetchMinMaxModification();
         String homeUrl = linkService.linkTo().absolute().toString();
-        writer.writeUrl(homeUrl, minMaxDates[1], null, 1.0f);
+        writer.writeUrl(homeUrl, minMaxDates[1], null, BigDecimal.ONE);
     }
 
     /**
@@ -100,6 +122,10 @@ public class SitemapView {
                 continue;
             }
 
+            if (interceptors.stream().anyMatch(it -> it.isIgnored(page))) {
+                continue;
+            }
+
             String pageUrl;
             if (page.getName() != null) {
                 pageUrl = linkService.linkTo().param("pagename", page.getName()).absolute().toString();
@@ -107,15 +133,22 @@ public class SitemapView {
                 pageUrl = linkService.linkTo().page(page).absolute().toString();
             }
 
-            Float priority = null;
+            AtomicReference<BigDecimal> priority = new AtomicReference<>(null);
             if (page.isHidden()) {
-                priority = 0.3f;
+                priority.set(new BigDecimal("0.3"));
             }
             if (page.isSticky()) {
-                priority = 0.7f;
+                priority.set(new BigDecimal("0.7"));
             }
+            interceptors.forEach(it -> it.priority(page, priority));
 
-            writer.writeUrl(pageUrl, page.getModification(), null, priority);
+            AtomicReference<Date> modification = new AtomicReference<>(page.getModification());
+            interceptors.forEach(it -> it.modification(page, modification));
+
+            AtomicReference<Frequency> frequency = new AtomicReference<>(null);
+            interceptors.forEach(it -> it.frequency(page, frequency));
+
+            writer.writeUrl(pageUrl, modification.get(), frequency.get(), priority.get());
         }
     }
 

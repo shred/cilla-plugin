@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.shredzone.cilla.core.model.Page;
+import org.shredzone.cilla.core.model.Picture;
 import org.shredzone.cilla.web.plugin.annotation.Priority;
 
 /**
@@ -87,6 +88,61 @@ public interface SitemapInterceptor {
      *            value at their discretion.
      */
     default void frequency(Page page, AtomicReference<Frequency> frequency) {
+        // do nothing by default
+    }
+
+    /**
+     * Returns {@code true} if a {@link Picture} is to be ignored for the sitemap.
+     *
+     * @param picture
+     *            Current {@link Picture} to be rendered
+     * @return {@code true}: ignore this picture, {@code false}: use this picture in the
+     *         sitemap. The picture is ignored if at least one interceptor returns
+     *         {@code true}.
+     */
+    default boolean isIgnored(Picture picture) {
+        return false;
+    }
+
+    /**
+     * Changes the priority of the picture in the sitemap. By default, pictures have a
+     * "0.2" priority.
+     *
+     * @param picture
+     *            Current {@link Picture} to test
+     * @param priority
+     *            Contains the current priority. Implementations can change this value at
+     *            their discretion.
+     */
+    default void priority(Picture picture, AtomicReference<BigDecimal> priority) {
+        // do nothing by default
+    }
+
+    /**
+     * Changes the modification date of the picture in the sitemap. By default, {@link
+     * Picture#getCreateDate()} is used.
+     *
+     * @param picture
+     *         Current {@link Picture} to test
+     * @param modification
+     *         Contains the current modification date. Implementations can change this
+     *         value at their discretion.
+     */
+    default void modification(Picture picture, AtomicReference<Date> modification) {
+        // do nothing by default
+    }
+
+    /**
+     * Changes the update frequency of the picture in the sitemap. By default, no
+     * frequency is used.
+     *
+     * @param picture
+     *         Current {@link Picture} to test
+     * @param frequency
+     *         Contains the current update frequency. Implementations can change this
+     *         value at their discretion.
+     */
+    default void frequency(Picture picture, AtomicReference<Frequency> frequency) {
         // do nothing by default
     }
 

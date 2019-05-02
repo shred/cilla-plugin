@@ -19,7 +19,8 @@
  */
 package org.shredzone.cilla.plugin.sitemap;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 import javax.annotation.PostConstruct;
@@ -34,7 +36,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.shredzone.cilla.core.model.GallerySection;
 import org.shredzone.cilla.core.model.Page;
+import org.shredzone.cilla.core.model.Picture;
 import org.shredzone.cilla.core.repository.PageDao;
 import org.shredzone.cilla.service.link.LinkService;
 import org.shredzone.cilla.web.plugin.manager.PriorityComparator;
@@ -55,6 +59,7 @@ import org.springframework.stereotype.Component;
 public class SitemapView {
 
     private @Value("${sitemap.skipHidden}") boolean skipHidden;
+    private @Value("${sitemap.skipGallery}") boolean skipGallery;
 
     private @Resource PageDao pageDao;
     private @Resource LinkService linkService;
@@ -88,6 +93,9 @@ public class SitemapView {
                 writer.writeHeader();
                 writeHome(writer);
                 writePages(writer);
+                if (!skipGallery) {
+                    writeGallery(writer);
+                }
                 writer.writeFooter();
                 writer.flush();
 
@@ -149,6 +157,47 @@ public class SitemapView {
             interceptors.forEach(it -> it.frequency(page, frequency));
 
             writer.writeUrl(pageUrl, modification.get(), frequency.get(), priority.get());
+        }
+    }
+
+    /**
+     * Generates a sitemap entry for all published gallery images
+     *
+     * @param writer
+     *            {@link SitemapWriter} to write to
+     */
+    private void writeGallery(SitemapWriter writer) throws IOException {
+        for (Page page : pageDao.fetchAllPublic()) {
+            if (page.isHidden() && skipHidden) {
+                continue;
+            }
+
+            if (interceptors.stream().anyMatch(it -> it.isIgnored(page))) {
+                continue;
+            }
+
+            for (GallerySection section : page.getSections().stream()
+                    .filter(GallerySection.class::isInstance)
+                    .map(GallerySection.class::cast)
+                    .collect(Collectors.toList())) {
+                for (Picture pic : section.getPictures()) {
+                    if (interceptors.stream().anyMatch(it -> it.isIgnored(pic))) {
+                        continue;
+                    }
+
+                    AtomicReference<BigDecimal> priority = new AtomicReference<>(null);
+                    interceptors.forEach(it -> it.priority(pic, priority));
+
+                    AtomicReference<Date> modification = new AtomicReference<>(page.getModification());
+                    interceptors.forEach(it -> it.modification(pic, modification));
+
+                    AtomicReference<Frequency> frequency = new AtomicReference<>(null);
+                    interceptors.forEach(it -> it.frequency(pic, frequency));
+
+                    String pictureUrl = linkService.linkTo().section(section).picture(pic).absolute().toString();
+                    writer.writeUrl(pictureUrl, modification.get(), frequency.get(), priority.get());
+                }
+            }
         }
     }
 

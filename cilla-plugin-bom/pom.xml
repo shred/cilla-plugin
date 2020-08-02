@@ -13,8 +13,8 @@
     <description>Cilla Plugins Bill of Materials</description>
     <properties>
         <cilla.version>0.2-SNAPSHOT</cilla.version>
-        <jumblr.version>0.0.11</jumblr.version>
-        <twitter4j.version>4.0.4</twitter4j.version>
+        <jumblr.version>0.0.13</jumblr.version>
+        <twitter4j.version>4.0.7</twitter4j.version>
 
         <maven.site.skip>true</maven.site.skip>
     </properties>

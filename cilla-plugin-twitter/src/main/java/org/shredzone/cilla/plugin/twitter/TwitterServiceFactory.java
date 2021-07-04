@@ -19,24 +19,24 @@
  */
 package org.shredzone.cilla.plugin.twitter;
 
-import twitter4j.Twitter;
+import io.github.redouane59.twitter.TwitterClient;
 
 /**
- * A factory for readily configured {@link Twitter}.
+ * A factory for readily configured {@link TwitterClient}.
  *
  * @author Richard "Shred" Körber
  */
 public interface TwitterServiceFactory {
 
     /**
-     * Creates a new {@link Twitter} instance.
+     * Creates a new {@link TwitterClient} instance.
      *
      * @param token
      *            User's token
      * @param secret
      *            User's secret
-     * @return {@link Twitter} instance. Each invocation creates a new instance.
+     * @return {@link TwitterClient} instance. Each invocation creates a new instance.
      */
-    Twitter getTwitterClient(String token, String secret);
+    TwitterClient getTwitterClient(String token, String secret);
 
 }

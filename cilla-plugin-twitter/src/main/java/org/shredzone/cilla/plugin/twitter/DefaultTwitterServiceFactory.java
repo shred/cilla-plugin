@@ -19,17 +19,14 @@
  */
 package org.shredzone.cilla.plugin.twitter;
 
-import twitter4j.Twitter;
-import twitter4j.TwitterFactory;
-import twitter4j.auth.AccessToken;
+import io.github.redouane59.twitter.TwitterClient;
+import io.github.redouane59.twitter.signature.TwitterCredentials;
 
 /**
  * Default implementation of {@link TwitterServiceFactory}.
  *
  */
 public class DefaultTwitterServiceFactory implements TwitterServiceFactory {
-
-    private final TwitterFactory factory = new TwitterFactory();
 
     private final String consumerKey;
     private final String consumerSecret;
@@ -48,13 +45,14 @@ public class DefaultTwitterServiceFactory implements TwitterServiceFactory {
     }
 
     @Override
-    public Twitter getTwitterClient(String token, String secret) {
-        AccessToken accessToken = new AccessToken(token, secret);
-
-        Twitter twitter = factory.getInstance();
-        twitter.setOAuthConsumer(consumerKey, consumerSecret);
-        twitter.setOAuthAccessToken(accessToken);
-        return twitter;
+    public TwitterClient getTwitterClient(String token, String secret) {
+        TwitterCredentials credentials = TwitterCredentials.builder()
+                .accessToken(token)
+                .accessTokenSecret(secret)
+                .apiKey(consumerKey)
+                .apiSecretKey(consumerSecret)
+                .build();
+        return new TwitterClient(credentials);
     }
 
 }

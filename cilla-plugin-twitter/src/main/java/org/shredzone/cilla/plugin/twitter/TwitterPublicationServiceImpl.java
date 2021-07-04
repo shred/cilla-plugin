@@ -21,17 +21,18 @@ package org.shredzone.cilla.plugin.twitter;
 
 import static java.util.stream.Collectors.toList;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import io.github.redouane59.twitter.TwitterClient;
+import io.github.redouane59.twitter.dto.tweet.Tweet;
 import org.shredzone.cilla.core.model.Page;
 import org.shredzone.cilla.core.model.Tag;
 import org.shredzone.cilla.core.model.User;
@@ -43,10 +44,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import twitter4j.Status;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
 
 /**
  * Default implementation of {@link TwitterPublicationService}.
@@ -60,7 +57,8 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
     public static final String PROPKEY_TWITTER_TOKEN = "twitter.token";
     public static final String PROPKEY_TWITTER_SECRET = "twitter.secret";
 
-    private static final int MAX_TWEET_LENGTH = 140;
+    private static final int MAX_TWEET_LENGTH = 280; // TODO: read from API
+    private static final int SHORT_URL_LENGTH = 23;  // TODO: read from API
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -74,8 +72,6 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
     private @Resource PageDao pageDao;
     private @Resource LinkService linkService;
 
-    private int shortUrlLength;
-    private Instant shortUrlLengthValidUntil;
     private List<String> fixedTags;
 
     @PostConstruct
@@ -96,15 +92,14 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
         }
 
         try {
-            Twitter twitter = createTwitterClient(page.getCreator());
-            updateShortUrlLength(twitter); // make sure shortUrlLength is up to date
+            TwitterClient twitter = createTwitterClient(page.getCreator());
 
             String statusLine = statusToPost(page);
-            Status status = twitter.updateStatus(statusLine);
+            Tweet tweet = twitter.postTweet(statusLine);
 
-            page.getProperties().put(PROPKEY_TWITTER_ID, String.valueOf(status.getId()));
+            page.getProperties().put(PROPKEY_TWITTER_ID, tweet.getId());
 
-            log.info("Registered page id " + page.getId() + ", Status ID " + status.getId());
+            log.info("Registered page id " + page.getId() + ", Status ID " + tweet.getId());
         } catch (Exception ex) {
             log.warn("Failed to submit a Twitter status for page id " + page.getId(), ex);
         }
@@ -117,13 +112,13 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
             return;
         }
 
-        Long statusId = getStatusId(page);
+        String statusId = getStatusId(page);
 
         if (statusId != null) {
             try {
-                Twitter twitter = createTwitterClient(page.getCreator());
+                TwitterClient twitter = createTwitterClient(page.getCreator());
 
-                twitter.destroyStatus(statusId);
+                twitter.deleteTweet(statusId);
 
                 page.getProperties().remove(PROPKEY_TWITTER_ID);
 
@@ -136,32 +131,32 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
 
     @Override
     public boolean isRegistered(Page page) {
-        Long statusId = getStatusId(page);
+        String statusId = getStatusId(page);
         if (statusId == null) {
             return false;
         }
 
         try {
-            Twitter twitter = createTwitterClient(page.getCreator());
-            twitter.tweets().showStatus(statusId);
-        } catch (TwitterException ex) {
-            if (ex.resourceNotFound()) {
-                return false;
-            }
+            TwitterClient twitter = createTwitterClient(page.getCreator());
+            twitter.getTweet(statusId);
+        } catch (NoSuchElementException ex) {
+            return false;
+        } catch (Exception ex) {
             log.warn("Failed to check Twitter status id " + statusId + " for page id " + page.getId(), ex);
+            return false;
         }
 
         return true;
     }
 
     /**
-     * Creates a new {@link Twitter} for the given user.
+     * Creates a new {@link TwitterClient} for the given user.
      *
      * @param user
-     *            {@link User} to get a {@link Twitter} for
-     * @return {@link Twitter}
+     *            {@link User} to get a {@link TwitterClient} for
+     * @return {@link TwitterClient}
      */
-    private Twitter createTwitterClient(User user) {
+    private TwitterClient createTwitterClient(User user) {
         String token = user.getProperties().get(PROPKEY_TWITTER_TOKEN);
         String secret = user.getProperties().get(PROPKEY_TWITTER_SECRET);
         return twitterServiceFactory.getTwitterClient(token, secret);
@@ -174,9 +169,8 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
      *            {@link Page} to get the status ID of
      * @return Status ID, or {@code null} if the status is not published yet at Twitter.
      */
-    private Long getStatusId(Page page) {
-        String id = page.getProperties().get(PROPKEY_TWITTER_ID);
-        return (id != null ? new Long(id) : null);
+    private String getStatusId(Page page) {
+        return page.getProperties().get(PROPKEY_TWITTER_ID);
     }
 
     /**
@@ -199,7 +193,7 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
             separator = " " + twitterSeparator.trim() + " ";
         }
 
-        int maxBodyLength = MAX_TWEET_LENGTH - separator.length() - shortUrlLength;
+        int maxBodyLength = MAX_TWEET_LENGTH - separator.length() - SHORT_URL_LENGTH;
         if (body.length() > maxBodyLength) {
             StringBuilder trunc = new StringBuilder(body);
             int truncpos = trunc.lastIndexOf(" ", maxBodyLength - 1);
@@ -273,21 +267,6 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
                 .filter(it -> !it.isEmpty())
                 .distinct()
                 .collect(toList());
-    }
-
-    /**
-     * Updates {@link #shortUrlLength}, which contains the current length of short URLs.
-     * The result is cached, and valid for at least 24 hours. The length for shortening
-     * HTTPS links is used.
-     *
-     * @param twitter
-     *            {@link Twitter} instance to use for fetching the value
-     */
-    private void updateShortUrlLength(Twitter twitter) throws TwitterException {
-        if (shortUrlLengthValidUntil == null || shortUrlLengthValidUntil.isBefore(Instant.now())) {
-            shortUrlLength = twitter.help().getAPIConfiguration().getShortURLLengthHttps();
-            shortUrlLengthValidUntil = Instant.now().plus(1, ChronoUnit.DAYS);
-        }
     }
 
 }

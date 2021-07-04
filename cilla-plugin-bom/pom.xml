@@ -14,7 +14,7 @@
     <properties>
         <cilla.version>0.2-SNAPSHOT</cilla.version>
         <jumblr.version>0.0.13</jumblr.version>
-        <twitter4j.version>4.0.7</twitter4j.version>
+        <twittered.version>2.3</twittered.version>
 
         <maven.site.skip>true</maven.site.skip>
     </properties>
@@ -42,9 +42,9 @@
                 <version>${jumblr.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.twitter4j</groupId>
-                <artifactId>twitter4j-core</artifactId>
-                <version>${twitter4j.version}</version>
+                <groupId>io.github.redouane59.twitter</groupId>
+                <artifactId>twittered</artifactId>
+                <version>${twittered.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

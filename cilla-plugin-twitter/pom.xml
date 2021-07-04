@@ -68,8 +68,8 @@
             <artifactId>commons-view</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.twitter4j</groupId>
-            <artifactId>twitter4j-core</artifactId>
+            <groupId>io.github.redouane59.twitter</groupId>
+            <artifactId>twittered</artifactId>
         </dependency>
 
         <dependency>

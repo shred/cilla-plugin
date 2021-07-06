@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,6 +67,7 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
     private @Value("${twitter.useTags}") boolean twitterUseTags;
     private @Value("${twitter.fixedTags}") String twitterFixedTags;
     private @Value("${twitter.separator}") String twitterSeparator;
+    private @Value("${twitter.threading}") boolean twitterThreading;
 
     private @Resource TwitterServiceFactory twitterServiceFactory;
     private @Resource TextFormatter textFormatter;
@@ -91,15 +93,28 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
             return;
         }
 
+
         try {
             TwitterClient twitter = createTwitterClient(page.getCreator());
 
             String statusLine = statusToPost(page);
-            Tweet tweet = twitter.postTweet(statusLine);
+
+            String inReplyTo = twitterThreading ? findInReplyTo(page) : null;
+            Tweet tweet;
+            if (inReplyTo != null) {
+                tweet = twitter.postTweet(statusLine, inReplyTo);
+            } else {
+                tweet = twitter.postTweet(statusLine);
+            }
 
             page.getProperties().put(PROPKEY_TWITTER_ID, tweet.getId());
 
-            log.info("Registered page id " + page.getId() + ", Status ID " + tweet.getId());
+            StringBuilder sb = new StringBuilder("Registered page id ");
+            sb.append(page.getId()).append(", Status ID ").append(tweet.getId());
+            if (inReplyTo != null) {
+                sb.append(", in reply to Status ID ").append(inReplyTo);
+            }
+            log.info(sb.toString());
         } catch (Exception ex) {
             log.warn("Failed to submit a Twitter status for page id " + page.getId(), ex);
         }
@@ -147,6 +162,28 @@ public class TwitterPublicationServiceImpl implements TwitterPublicationService 
         }
 
         return true;
+    }
+
+    /**
+     * Finds the most recent page with the same subject and a twitter ID. The result can
+     * be used to attach this page to an earlier tweet of the related subject.
+     *
+     * @param page
+     *         {@link Page} that is to be tweeted
+     * @return Tweet ID of a related earlier page with the same subject, or {@code null}
+     * if there is no such page.
+     */
+    private String findInReplyTo(Page page) {
+        String subject = page.getSubject();
+        if (subject == null) {
+            return null;
+        }
+
+        return pageDao.fetchSameSubject(page).stream()
+                .map(p -> page.getProperties().get(PROPKEY_TWITTER_ID))
+                .filter(Objects::nonNull)
+                .reduce((first, second) -> second)
+                .orElse(null);
     }
 
     /**

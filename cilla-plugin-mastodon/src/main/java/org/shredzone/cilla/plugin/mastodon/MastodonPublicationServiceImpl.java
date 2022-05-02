@@ -184,7 +184,7 @@ public class MastodonPublicationServiceImpl implements MastodonPublicationServic
 
         try {
             return pageDao.fetchSameSubject(page).stream()
-                    .map(p -> page.getProperties().get(PROPKEY_MASTODON_ID))
+                    .map(p -> p.getProperties().get(PROPKEY_MASTODON_ID))
                     .filter(Objects::nonNull)
                     .reduce((first, second) -> second)
                     .map(Long::parseLong)

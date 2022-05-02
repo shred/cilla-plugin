@@ -58,6 +58,7 @@
         <module>cilla-plugin-social</module>
         <module>cilla-plugin-tumblr</module>
         <module>cilla-plugin-twitter</module>
+        <module>cilla-plugin-mastodon</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

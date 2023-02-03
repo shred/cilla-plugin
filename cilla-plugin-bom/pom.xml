@@ -14,7 +14,6 @@
     <properties>
         <cilla.version>0.2-SNAPSHOT</cilla.version>
         <jumblr.version>0.0.13</jumblr.version>
-        <twittered.version>2.3</twittered.version>
         <mastodon4j.version>1.7.0</mastodon4j.version>
 
         <maven.site.skip>true</maven.site.skip>
@@ -41,11 +40,6 @@
                 <groupId>com.tumblr</groupId>
                 <artifactId>jumblr</artifactId>
                 <version>${jumblr.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.redouane59.twitter</groupId>
-                <artifactId>twittered</artifactId>
-                <version>${twittered.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.sys1yagi.mastodon4j</groupId>

@@ -10,7 +10,6 @@ This project contains some optional plugins that extend _Cilla_.
 * `cilla-plugin-sitemap` - Generates a `sitemap.xml` file for web crawlers.
 * `cilla-plugin-social` - Links to social web pages.
 * `cilla-plugin-tumblr` -  Synchronizes blog articles with [tumblr](https://www.tumblr.com/).
-* `cilla-plugin-twitter` -  Synchronizes blog articles with [twitter](https://twitter.com/).
 
 ## Documentation
 

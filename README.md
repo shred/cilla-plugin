@@ -8,7 +8,6 @@ This project contains some optional plugins that extend _Cilla_.
 
 * `cilla-plugin-mastodon` - Synchronizes blog articles with [Mastodon](https://joinmastodon.org/) instances.
 * `cilla-plugin-sitemap` - Generates a `sitemap.xml` file for web crawlers.
-* `cilla-plugin-social` - Links to social web pages.
 * `cilla-plugin-tumblr` -  Synchronizes blog articles with [tumblr](https://www.tumblr.com/).
 
 ## Documentation

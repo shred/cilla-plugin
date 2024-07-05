@@ -24,6 +24,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,6 +57,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class MastodonPublicationServiceImpl implements MastodonPublicationService {
     public static final String PROPKEY_MASTODON_ID = "mastodon.id";
+    public static final String PROPKEY_MASTODON_LINK = "mastodon.url";
     public static final String PROPKEY_MASTODON_INSTANCE = "mastodon.instance";
     public static final String PROPKEY_MASTODON_TOKEN = "mastodon.token";
 
@@ -106,7 +108,9 @@ public class MastodonPublicationServiceImpl implements MastodonPublicationServic
                     .postStatus(statusLine, inReplyTo, null, mastodonSensitive, null, mastodonVisibility)
                     .execute();
 
-            page.getProperties().put(PROPKEY_MASTODON_ID, String.valueOf(status.getId()));
+            Map<String, String> props = page.getProperties();
+            props.put(PROPKEY_MASTODON_ID, String.valueOf(status.getId()));
+            props.put(PROPKEY_MASTODON_LINK, status.getUrl());
 
             StringBuilder sb = new StringBuilder("Registered page id ");
             sb.append(page.getId()).append(", Status ID ").append(status.getId());
@@ -135,6 +139,7 @@ public class MastodonPublicationServiceImpl implements MastodonPublicationServic
                 statuses.deleteStatus(statusId);
 
                 page.getProperties().remove(PROPKEY_MASTODON_ID);
+                page.getProperties().remove(PROPKEY_MASTODON_LINK);
 
                 log.info("Deleted page id " + page.getId() + ", Mastodon status ID " + statusId);
             } catch (Exception ex) {

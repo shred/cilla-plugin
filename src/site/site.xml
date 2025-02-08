@@ -26,7 +26,7 @@
   <version position="right"/>
   <body>
     <links>
-      <item name="GitHub" href="https://github.com/shred/cilla-plugin"/>
+      <item name="Repository" href="https://codeberg.org/shred/cilla-plugin"/>
     </links>
     <breadcrumbs>
       <item name="shredzone.org" href="http://www.shredzone.org"/>

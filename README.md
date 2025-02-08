@@ -16,8 +16,8 @@ See the [online documentation](https://shredzone.org/maven/cilla-plugin/).
 
 ## Contribute
 
-* Fork the [Source code at GitHub](https://github.com/shred/cilla-plugin). Feel free to send pull requests.
-* Found a bug? [File a bug report!](https://github.com/shred/cilla-plugin/issues)
+* Fork the [Source code at Codeberg](https://codeberg.org/shred/cilla-plugin). Feel free to send pull requests.
+* Found a bug? [File a bug report!](https://codeberg.org/shred/cilla-plugin/issues)
 
 ## License
 

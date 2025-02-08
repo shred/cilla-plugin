@@ -38,13 +38,13 @@
         </license>
     </licenses>
     <scm>
-        <url>https://github.com/shred/cilla-plugin/</url>
-        <connection>scm:git:git@github.com:shred/cilla-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:shred/cilla-plugin.git</developerConnection>
+        <url>https://codeberg.org/shred/cilla-plugin/</url>
+        <connection>scm:git:git@codeberg.org:shred/cilla-plugin.git</connection>
+        <developerConnection>scm:git:git@codeberg.org:shred/cilla-plugin.git</developerConnection>
     </scm>
     <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/shred/cilla-plugin/issues</url>
+        <system>Codeberg</system>
+        <url>https://codeberg.org/shred/cilla-plugin/issues</url>
     </issueManagement>
     <developers>
         <developer>
